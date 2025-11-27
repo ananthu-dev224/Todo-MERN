@@ -9,12 +9,21 @@ export default function TodoItem({ todo, refresh }) {
   const [description, setDescription] = useState(todo.description || "");
 
   const updateStatus = async (e) => {
-    await API.put(`/todos/${todo._id}`, { status: e.target.value });
-    toast.info("Status Updated");
-    refresh();
+    try {
+      await API.put(`/todos/${todo._id}`, { status: e.target.value });
+      toast.info("Status Updated");
+      refresh();
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
   };
 
   const saveEdit = async () => {
+    if (!title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+
     try {
       await API.put(`/todos/${todo._id}`, { title, description });
       toast.success("Todo Updated");
@@ -52,14 +61,19 @@ export default function TodoItem({ todo, refresh }) {
       {editing ? (
         <div>
           <input
-            className="w-full border p-2 rounded mb-2"
+            className={`w-full border p-2 rounded mb-2 ${
+              !title.trim() ? "border-red-500" : "border-gray-300"
+            }`}
             value={title}
+            required
+            placeholder="Enter todo title"
             onChange={(e) => setTitle(e.target.value)}
           />
 
           <textarea
-            className="w-full border p-2 rounded mb-2"
+            className="w-full border border-gray-300 p-2 rounded mb-2"
             value={description}
+            placeholder="Enter description (optional)"
             onChange={(e) => setDescription(e.target.value)}
           ></textarea>
 
